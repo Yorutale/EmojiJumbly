@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Emoji Жасаушы – Amjilt Cyber School</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #fff0db;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1rem;
+      min-height: 100vh;
+    }
+    h1 {
+      font-size: 1.8rem;
+      margin-bottom: 0.5rem;
+    }
+    h2 {
+      font-weight: 400;
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+    .workspace {
+      border: 2px dashed #ccc;
+      border-radius: 50%;
+      width: 300px;
+      height: 300px;
+      background: yellow;
+      position: relative;
+      margin-bottom: 1rem;
+      overflow: hidden;
+    }
+    .draggable {
+      font-size: 2rem;
+      cursor: grab;
+      margin: 5px;
+      display: inline-block;
+    }
+    .emoji-bank {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 5px;
+      max-width: 90vw;
+      height: 200px;
+      overflow-y: scroll;
+      padding: 1rem;
+      background: #fff9f0;
+      border-radius: 8px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+    .workspace .draggable {
+      position: absolute;
+      user-select: none;
+    }
+    button {
+      background: #00c6ff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      font-size: 1rem;
+      margin-top: 1rem;
+      cursor: pointer;
+    }
+    footer {
+      margin-top: 2rem;
+      font-size: 0.9rem;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <h1>Amjilt Cyber School</h1>
+  <h2>Өзіңіздің Emoji-ңызды жасаңыз 🎨😁</h2>
+
+  <div class="workspace" id="workspace" ondragover="allowDrop(event)" ondrop="drop(event)"></div>
+
+  <div class="emoji-bank" id="emojiBank"></div>
+
+  <button onclick="resetWorkspace()">Тазарту</button>
+
+  <footer>
+    &copy; 2023 Amjilt Cyber School | Жоба: Emoji Жасаушы 🤍
+  </footer>
+
+  <script>
+    const emojiBank = document.getElementById('emojiBank');
+
+    // Add a broad set of emojis
+    const allEmojis = Array.from("😀😁😂🤣😃😄😅😆😉😊😋😎😍😘🥰😗😙😚🙂🤗🤩🤔🤨😐😑😶🙄😏😣😥😮🤐😯😪😫🥱😴😌😛😜😝🤤😒😓😔😕🙃🤑😲☹️🙁😖😞😟😤😢😭😦😧😨😩🤯😬😰😱🥵🥶😳🤪😵😡😠🤬😷🤒🤕🤢🤮🤧😇🥳🥸🤠😈👿👹👺💀👻👽👾🤖💩🔥✨🌟💫💥💦💨🕳️💣💬👁️👀🧠👅👄🦷🦴👂👃👣🫀🫁🫂👤👥🗣️👶🧒👦👧🧑👨👩🧓👴👵👮🕵️💂👷🤴👸👳👲🧕🤵👰🫅🫄🫃🤰🤱👼🎅🤶🧑‍🎄🦸🦹🧙🧚🧛🧜🧝🧞🧟💆💇🚶🏃💃🕺🧖🧘👯🧍🧎🙇🤦🤷");
+
+    allEmojis.forEach((emoji, index) => {
+      const span = document.createElement('span');
+      span.className = 'draggable';
+      span.textContent = emoji;
+      span.draggable = true;
+      span.id = 'emoji-' + index;
+      span.addEventListener('dragstart', drag);
+      emojiBank.appendChild(span);
+    });
+
+    function drag(ev) {
+      ev.dataTransfer.setData("text", ev.target.id);
+    }
+
+    function allowDrop(ev) {
+      ev.preventDefault();
+    }
+
+    function drop(ev) {
+      ev.preventDefault();
+      const id = ev.dataTransfer.getData("text");
+      const emoji = document.getElementById(id);
+      const clone = emoji.cloneNode(true);
+      clone.style.left = ev.offsetX + 'px';
+      clone.style.top = ev.offsetY + 'px';
+      clone.style.fontSize = '2rem';
+      clone.contentEditable = true;
+      clone.onmousedown = dragMove;
+      clone.classList.add('draggable');
+      clone.removeAttribute('id');
+      document.getElementById('workspace').appendChild(clone);
+    }
+
+    function resetWorkspace() {
+      const workspace = document.getElementById('workspace');
+      workspace.innerHTML = '';
+    }
+
+    function dragMove(e) {
+      e.preventDefault();
+      const elem = e.target;
+      const offsetX = e.offsetX;
+      const offsetY = e.offsetY;
+      function moveAt(pageX, pageY) {
+        elem.style.left = (pageX - workspace.getBoundingClientRect().left - offsetX) + 'px';
+        elem.style.top = (pageY - workspace.getBoundingClientRect().top - offsetY) + 'px';
+      }
+      function onMouseMove(event) {
+        moveAt(event.pageX, event.pageY);
+      }
+      document.addEventListener('mousemove', onMouseMove);
+      document.onmouseup = function() {
+        document.removeEventListener('mousemove', onMouseMove);
+        document.onmouseup = null;
+      };
+    }
+  </script>
+</body>
+</html>
