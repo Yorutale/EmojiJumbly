@@ -83,7 +83,8 @@
   <h1>Amjilt Cyber School</h1>
   <h2>Өзіңіздің Emoji-ңызды жасаңыз 🎨😁</h2>
 
-  <div class="workspace" id="workspace"></div>
+  <div class="workspace" id="workspace" ondragover="allowDrop(event)"></div>
+
 
   <div class="emoji-bank" id="emojiBank"></div>
 
@@ -103,61 +104,58 @@
       const span = document.createElement('span');
       span.className = 'draggable';
       span.textContent = emoji;
-      span.setAttribute('draggable', false); // Disable default drag
-      span.addEventListener('touchstart', startEmojiDrag);
-      span.addEventListener('mousedown', startEmojiDrag);
+      span.setAttribute('draggable', true);
+      span.id = 'emoji-' + index;
+      span.addEventListener('dragstart', drag);
       emojiBank.appendChild(span);
     });
 
-    function startEmojiDrag(e) {
-      e.preventDefault();
-      const touch = e.touches ? e.touches[0] : e;
-      const emoji = e.target.cloneNode(true);
-      emoji.style.position = 'absolute';
-      emoji.style.left = touch.clientX - workspace.getBoundingClientRect().left + 'px';
-      emoji.style.top = touch.clientY - workspace.getBoundingClientRect().top + 'px';
-      emoji.style.fontSize = '2rem';
-      emoji.onmousedown = dragMove;
-      emoji.ontouchstart = dragMove;
-      workspace.appendChild(emoji);
+    function drag(ev) {
+      ev.dataTransfer.setData("text", ev.target.id);
+    }
+
+    function allowDrop(ev) {
+      ev.preventDefault();
+    }
+
+    workspace.ondrop = function(ev) {
+      ev.preventDefault();
+      const id = ev.dataTransfer.getData("text");
+      const emoji = document.getElementById(id);
+      const clone = emoji.cloneNode(true);
+      clone.style.position = 'absolute';
+      clone.style.left = ev.offsetX + 'px';
+      clone.style.top = ev.offsetY + 'px';
+      clone.style.fontSize = '2rem';
+      clone.classList.add('draggable');
+      clone.onmousedown = dragMove;
+      workspace.appendChild(clone);
+    };
+
+    function resetWorkspace() {
+      workspace.innerHTML = '';
     }
 
     function dragMove(e) {
       e.preventDefault();
       const elem = e.target;
-      const startX = e.touches ? e.touches[0].clientX : e.clientX;
-      const startY = e.touches ? e.touches[0].clientY : e.clientY;
-      const offsetX = startX - elem.getBoundingClientRect().left;
-      const offsetY = startY - elem.getBoundingClientRect().top;
+      const offsetX = e.offsetX;
+      const offsetY = e.offsetY;
 
-      function moveAt(x, y) {
-        const left = x - workspace.getBoundingClientRect().left - offsetX;
-        const top = y - workspace.getBoundingClientRect().top - offsetY;
-        elem.style.left = left + 'px';
-        elem.style.top = top + 'px';
+      function moveAt(pageX, pageY) {
+        elem.style.left = (pageX - workspace.getBoundingClientRect().left - offsetX) + 'px';
+        elem.style.top = (pageY - workspace.getBoundingClientRect().top - offsetY) + 'px';
       }
 
-      function onMove(ev) {
-        const x = ev.touches ? ev.touches[0].clientX : ev.clientX;
-        const y = ev.touches ? ev.touches[0].clientY : ev.clientY;
-        moveAt(x, y);
+      function onMouseMove(event) {
+        moveAt(event.pageX, event.pageY);
       }
 
-      function stop() {
-        document.removeEventListener('mousemove', onMove);
-        document.removeEventListener('mouseup', stop);
-        document.removeEventListener('touchmove', onMove);
-        document.removeEventListener('touchend', stop);
-      }
-
-      document.addEventListener('mousemove', onMove);
-      document.addEventListener('mouseup', stop);
-      document.addEventListener('touchmove', onMove, { passive: false });
-      document.addEventListener('touchend', stop);
-    }
-
-    function resetWorkspace() {
-      workspace.innerHTML = '';
+      document.addEventListener('mousemove', onMouseMove);
+      document.onmouseup = function() {
+        document.removeEventListener('mousemove', onMouseMove);
+        document.onmouseup = null;
+      };
     }
   </script>
 </body>
