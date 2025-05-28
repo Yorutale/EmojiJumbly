@@ -2,161 +2,209 @@
 <html lang="kk">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Emoji Жасаушы – Amjilt Cyber School</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Эмоджи Жұмбақ – Amjilt Cyber School</title>
   <style>
-    html, body {
-      margin: 0;
+    body {
       font-family: 'Segoe UI', sans-serif;
-      background: #fff0db;
-      color: #333;
+      background: linear-gradient(to right, #f9f9f9, #e0f7fa);
+      margin: 0;
+      padding: 2rem;
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 1rem;
-      min-height: 100vh;
-      overflow: hidden;
-      touch-action: none;
+      text-align: center;
     }
     h1 {
       font-size: 1.8rem;
-      margin-bottom: 0.5rem;
-    }
-    h2 {
-      font-weight: 400;
+      color: #0077b6;
       margin-bottom: 1rem;
+    }
+    .emoji-display {
+      font-size: 3rem;
+      margin: 2rem 0;
+    }
+    .input-hint {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+      margin-bottom: 1rem;
+    }
+    .input-hint input {
+      width: 2rem;
       text-align: center;
+      font-size: 1rem;
+      padding: 5px;
+      border: 2px solid #ccc;
+      border-radius: 4px;
+      outline: none;
+      transition: border 0.2s ease;
     }
-    .workspace {
-      border: 2px dashed #ccc;
-      border-radius: 50%;
-      width: 300px;
-      height: 300px;
-      background: yellow;
-      position: relative;
-      margin-bottom: 1rem;
-      overflow: hidden;
-      touch-action: none;
+    .input-hint input.filled {
+      border-color: #00b4d8;
     }
-    .draggable {
-      font-size: 2rem;
-      cursor: grab;
-      margin: 5px;
-      display: inline-block;
-      touch-action: none;
+    button {
+      padding: 10px 20px;
+      margin: 0.5rem;
+      font-size: 1rem;
+      background-color: #00b4d8;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
     }
-    .emoji-bank {
+    .button-row {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      gap: 5px;
-      max-width: 90vw;
-      height: 200px;
-      overflow-y: auto;
-      padding: 1rem;
-      background: #fff9f0;
-      border-radius: 8px;
-      box-shadow: 0 0 5px rgba(0,0,0,0.1);
     }
-    .workspace .draggable {
-      position: absolute;
-      user-select: none;
-    }
-    button {
-      background: #00c6ff;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 6px;
-      font-size: 1rem;
+    .result {
       margin-top: 1rem;
-      cursor: pointer;
-    }
-    footer {
-      margin-top: 2rem;
-      font-size: 0.9rem;
-      color: #666;
+      font-size: 1.2rem;
+      color: #333;
     }
   </style>
 </head>
 <body>
-  <h1>Amjilt Cyber School</h1>
-  <h2>Өзіңіздің Emoji-ңызды жасаңыз 🎨😁</h2>
-
-  <div class="workspace" id="workspace" ondragover="allowDrop(event)"></div>
-
-
-  <div class="emoji-bank" id="emojiBank"></div>
-
-  <button onclick="resetWorkspace()">Тазарту</button>
-
-  <footer>
-    &copy; 2023 Amjilt Cyber School | Жоба: Emoji Жасаушы 🤍
-  </footer>
+  <h1>4 Эмоджи - 1 Сөз!</h1>
+  <div class="emoji-display" id="emojiQuestion">🔒</div>
+  <div class="input-hint" id="inputHint"></div>
+  <div class="button-row">
+    <button onclick="checkAnswer()">Тексеру</button>
+    <button onclick="clearInputs()">Тазарту</button>
+    <button onclick="deleteLast()">Жою</button>
+    <button id="nextBtn" onclick="nextQuestion()" disabled>Келесі</button>
+  </div>
+  <div class="result" id="resultDisplay"></div>
 
   <script>
-    const emojiBank = document.getElementById('emojiBank');
-    const workspace = document.getElementById('workspace');
+    const questions = [
+      { emoji: "🍎⛰️🇰🇿🏙️", answer: "алматы" },
+      { emoji: "👵➕🌈☁️", answer: "кемпірқосақ" },
+      { emoji: "📚🎓🏫🧠", answer: "білім" },
+      { emoji: "🚀🌌🔭🛰️", answer: "ғарыш" },
+      { emoji: "🌞🌊🍉👒", answer: "жаз" },
+      { emoji: "👣🌲🍃🌄", answer: "серуен" },
+      { emoji: "🎨🖌️🧑‍🎨🖼️", answer: "сурет" },
+      { emoji: "🧊🥛🐄☕", answer: "айран" },
+      { emoji: "👨‍👩‍👧‍👦🏠💞📸", answer: "отбасы" },
+      { emoji: "📖✨🧙‍♂️🐉", answer: "ертегі" },
+      { emoji: "🍞🧈🍳🥓", answer: "таңғыас" },
+      { emoji: "🏔️🧗‍♂️🎒📷", answer: "тауғажүру" },
+      { emoji: "⚽🥅🎽🏟️", answer: "футбол" },
+      { emoji: "🎬🎥🍿👀", answer: "кино" },
+      { emoji: "🎤🎶🎧🎼", answer: "ән" },
+      { emoji: "🚗🛣️⛽🗺️", answer: "саяхат" },
+      { emoji: "💻🖱️⌨️🖥️", answer: "компьютер" },
+      { emoji: "📱💬📷🤳", answer: "смартфон" },
+      { emoji: "🍲🥗🍽️🍛", answer: "түскіас" },
+      { emoji: "🧹🪣🧼🧽", answer: "тазалау" },
+      { emoji: "🐶🐾🦴🎾", answer: "ит" },
+      { emoji: "🐱😺🐾🐟", answer: "мысық" },
+      { emoji: "🚴‍♀️🛣️💨🥇", answer: "веложүгіру" },
+      { emoji: "📅🕒✏️📋", answer: "күнтізбе" },
+      { emoji: "🔬🧬📊📖", answer: "ғылым" },
+      { emoji: "📦🚚🏠📬", answer: "жеткізу" },
+      { emoji: "🧃🥤🧋🍹", answer: "сусын" },
+      { emoji: "🏖️👓🩴🌴", answer: "жағажай" },
+      { emoji: "🌧️☔🌦️🌂", answer: "жауын" },
+      { emoji: "❄️⛄🧣🧤", answer: "қыс" },
+      { emoji: "📘✍️📄🖊️", answer: "жазу" },
+      { emoji: "🧩🎲♟️🎯", answer: "ойын" },
+      { emoji: "🍽️🍖🥗🍰", answer: "тамақ" },
+      { emoji: "🎁🎂🎈🎉", answer: "туғанкүн" },
+      { emoji: "🏥💉🩺👩‍⚕️", answer: "аурухана" },
+      { emoji: "✈️🛄🌏📸", answer: "саяхат" },
+      { emoji: "🛏️🌙😴💤", answer: "ұйқы" },
+      { emoji: "🧪🥼🔍📚", answer: "зерттеу" },
+      { emoji: "🎓📖🏫📚", answer: "оқу" },
+      { emoji: "🔒🔑🚪🛑", answer: "құпия" },
+      { emoji: "💡🧠💭🔍", answer: "идея" },
+      { emoji: "🎯🏹🥇🏆", answer: "мақсат" },
+      { emoji: "🖥️⌨️📝🧾", answer: "реферат" },
+      { emoji: "🏃‍♂️⏱️📈💪", answer: "жаттығу" },
+      { emoji: "🎮🕹️👾💻", answer: "ойын" },
+      { emoji: "📊📈📉🧾", answer: "есеп" },
+      { emoji: "📷📸🖼️🧾", answer: "фото" },
+      { emoji: "🎼🎷🥁🎹", answer: "музыка" }
+    ];
 
-    const allEmojis = Array.from("😀😁😂🤣😃😄😅😆😉😊😋😎😍😘🥰😗😙😚🙂🤗🤩🤔🤨😐😑😶🙄😏😣😥😮🤐😯😪😫🥱😴😌😛😜😝🤤😒😓😔😕🙃🤑😲☹️🙁😖😞😟😤😢😭😦😧😨😩🤯😬😰😱🥵🥶😳🤪😵😡😠🤬😷🤒🤕🤢🤮🤧😇🥳🥸🤠😈👿👹👺💀👻👽👾🤖💩🔥✨🌟💫💥💦💨🕳️💣💬👁️👀🧠👅👄🦷🦴👂👃👣🫀🫁🫂👤👥🗣️👶🧒👦👧🧑👨👩🧓👴👵👮🕵️💂👷🤴👸👳👲🧕🤵👰🫅🫄🫃🤰🤱👼🎅🤶🧑‍🎄🦸🦹🧙🧚🧛🧜🧝🧞🧟💆💇🚶🏃💃🕺🧖🧘👯🧍🧎🙇🤦🤷");
+    let currentIndex = 0;
+    let solved = false;
 
-    allEmojis.forEach((emoji, index) => {
-      const span = document.createElement('span');
-      span.className = 'draggable';
-      span.textContent = emoji;
-      span.setAttribute('draggable', true);
-      span.id = 'emoji-' + index;
-      span.addEventListener('dragstart', drag);
-      emojiBank.appendChild(span);
-    });
+    function showQuestion() {
+      const q = questions[currentIndex];
+      document.getElementById('emojiQuestion').textContent = q.emoji;
+      document.getElementById('resultDisplay').textContent = '';
+      const hintContainer = document.getElementById('inputHint');
+      hintContainer.innerHTML = '';
 
-    function drag(ev) {
-      ev.dataTransfer.setData("text", ev.target.id);
-    }
-
-    function allowDrop(ev) {
-      ev.preventDefault();
-    }
-
-    workspace.ondrop = function(ev) {
-      ev.preventDefault();
-      const id = ev.dataTransfer.getData("text");
-      const emoji = document.getElementById(id);
-      const clone = emoji.cloneNode(true);
-      clone.style.position = 'absolute';
-      clone.style.left = ev.offsetX + 'px';
-      clone.style.top = ev.offsetY + 'px';
-      clone.style.fontSize = '2rem';
-      clone.classList.add('draggable');
-      clone.onmousedown = dragMove;
-      workspace.appendChild(clone);
-    };
-
-    function resetWorkspace() {
-      workspace.innerHTML = '';
-    }
-
-    function dragMove(e) {
-      e.preventDefault();
-      const elem = e.target;
-      const offsetX = e.offsetX;
-      const offsetY = e.offsetY;
-
-      function moveAt(pageX, pageY) {
-        elem.style.left = (pageX - workspace.getBoundingClientRect().left - offsetX) + 'px';
-        elem.style.top = (pageY - workspace.getBoundingClientRect().top - offsetY) + 'px';
+      for (let i = 0; i < q.answer.length; i++) {
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.maxLength = 1;
+        input.dataset.index = i;
+        input.oninput = function () {
+          input.classList.toggle('filled', input.value.length > 0);
+          if (input.value.length > 0) {
+            const next = hintContainer.querySelectorAll('input')[i + 1];
+            if (next) next.focus();
+          }
+        };
+        hintContainer.appendChild(input);
       }
 
-      function onMouseMove(event) {
-        moveAt(event.pageX, event.pageY);
-      }
-
-      document.addEventListener('mousemove', onMouseMove);
-      document.onmouseup = function() {
-        document.removeEventListener('mousemove', onMouseMove);
-        document.onmouseup = null;
-      };
+      const firstInput = hintContainer.querySelector('input');
+      if (firstInput) firstInput.focus();
+      document.getElementById('nextBtn').disabled = true;
+      solved = false;
     }
+
+    function checkAnswer() {
+      const inputs = document.querySelectorAll('#inputHint input');
+      const userAnswer = Array.from(inputs).map(i => i.value).join('').toLowerCase();
+      const correctAnswer = questions[currentIndex].answer.toLowerCase();
+      const result = document.getElementById('resultDisplay');
+      if (userAnswer === correctAnswer) {
+        result.textContent = '✅ Дұрыс!';
+        result.style.color = 'green';
+        solved = true;
+        document.getElementById('nextBtn').disabled = false;
+      } else {
+        result.textContent = `❌ Қате. Дұрыс жауап: ${questions[currentIndex].answer}`;
+        result.style.color = 'red';
+      }
+    }
+
+    function clearInputs() {
+      const inputs = document.querySelectorAll('#inputHint input');
+      inputs.forEach(input => {
+        input.value = '';
+        input.classList.remove('filled');
+      });
+      const firstInput = document.querySelector('#inputHint input');
+      if (firstInput) firstInput.focus();
+    }
+
+    function deleteLast() {
+      const inputs = Array.from(document.querySelectorAll('#inputHint input'));
+      for (let i = inputs.length - 1; i >= 0; i--) {
+        if (inputs[i].value) {
+          inputs[i].value = '';
+          inputs[i].classList.remove('filled');
+          inputs[i].focus();
+          break;
+        }
+      }
+    }
+
+    function nextQuestion() {
+      if (!solved) return;
+      currentIndex = (currentIndex + 1) % questions.length;
+      showQuestion();
+    }
+
+    showQuestion();
   </script>
 </body>
 </html>
